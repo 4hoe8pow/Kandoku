@@ -1,0 +1,44 @@
+# Unityが生成するキャッシュや一時ファイル
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+
+# Visual StudioやRiderなどのIDEが生成するファイル
+.vs/
+.gradle/
+ExportedObj/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unityのクラッシュレポートやログファイル
+sysinfo.txt
+
+# ビルド成果物
+*.apk
+*.aab
+*.unitypackage
+
+# OSによって生成される不要ファイル
+.DS_Store
+Thumbs.db
+
+# Visual Studio Codeの設定ファイル
+.vscode/
