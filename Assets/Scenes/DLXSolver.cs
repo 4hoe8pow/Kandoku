@@ -9,16 +9,16 @@ public enum KandokuSymbol
 
 public enum KandokuDifficulty
 {
-    VeryEasy = 1,
-    Easy = 2,
-    Normal = 3,
-    Hard = 4,
-    VeryHard = 5,
-    Extreme = 6,
-    Spicy = 7,
-    Insane = 8,
-    Nightmare = 9,
-    Unknown = 10
+    VeryEasy = 1, // 臨
+    Easy = 2,     // 兵
+    Normal = 3,   // 闘
+    Hard = 4,     // 者
+    VeryHard = 5, // 皆
+    Extreme = 6,  // 陣
+    Spicy = 7,    // 烈
+    Insane = 8,   // 在
+    Nightmare = 9,// 前
+    Unknown = 10  // 臨兵闘者皆陣烈在前
 }
 
 // DLXノード
@@ -265,15 +265,15 @@ public static class KandokuGenerator
 
     private static int GetMaskCount(KandokuDifficulty difficulty) => difficulty switch
     {
-        KandokuDifficulty.VeryEasy => 39,
-        KandokuDifficulty.Easy => 47,
-        KandokuDifficulty.Normal => 51,
-        KandokuDifficulty.Hard => 54,
-        KandokuDifficulty.VeryHard => 56,
-        KandokuDifficulty.Extreme => 58,
-        KandokuDifficulty.Spicy => 60,
-        KandokuDifficulty.Insane => 62,
-        KandokuDifficulty.Nightmare => 63,
+        KandokuDifficulty.VeryEasy => 38,
+        KandokuDifficulty.Easy => 41,
+        KandokuDifficulty.Normal => 43,
+        KandokuDifficulty.Hard => 45,
+        KandokuDifficulty.VeryHard => 48,
+        KandokuDifficulty.Extreme => 50,
+        KandokuDifficulty.Spicy => 53,
+        KandokuDifficulty.Insane => 57,
+        KandokuDifficulty.Nightmare => 60,
         KandokuDifficulty.Unknown => 64,
         _ => throw new ArgumentOutOfRangeException(nameof(difficulty))
     };

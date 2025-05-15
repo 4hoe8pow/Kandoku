@@ -4,9 +4,9 @@ using TMPro;
 
 public class UIProblemMapper : MonoBehaviour
 {
-    [Header("Grid")]
+    [Header("Problem Panel")]
+    [SerializeField] private Transform hintParent; // 問題用親パネル
     [SerializeField] private GameObject hintPrefab; // 出題用ヒント
-    [SerializeField] private Transform gridParent;
 
     [Header("Answer Keys")]
     [SerializeField] private GameObject answerPrefab; // ユーザ解答用
@@ -15,7 +15,7 @@ public class UIProblemMapper : MonoBehaviour
     [SerializeField] private GameObject keyPrefab;       // 入力キー用のボタンPrefab
     [SerializeField] private Transform keyPanelParent;
 
-    [SerializeField] private KandokuDifficulty difficulty = KandokuDifficulty.Normal;
+    private KandokuDifficulty difficulty = KandokuDifficulty.Normal;
 
     private string[,] solution;
     private string[,] problem;
@@ -29,6 +29,7 @@ public class UIProblemMapper : MonoBehaviour
         {
             AdjustGridPanelSize();
             solution = KandokuGenerator.GenerateKandoku();
+            difficulty = GameSettings.Difficulty;
             problem = KandokuGenerator.MaskKandoku(solution, difficulty);
 
             BuildUIGrid();
@@ -45,7 +46,7 @@ public class UIProblemMapper : MonoBehaviour
         const int size = 9;
 
         // 既存セルの破棄
-        foreach (Transform child in gridParent)
+        foreach (Transform child in hintParent)
             Destroy(child.gameObject);
 
         for (int r = 0; r < size; r++)
@@ -57,7 +58,7 @@ public class UIProblemMapper : MonoBehaviour
                 // 「?」ならキー用Prefab、そうでなければセル用Prefab を生成
                 GameObject go = Instantiate(
                     symbol == "？" ? answerPrefab : hintPrefab,
-                    gridParent
+                    hintParent
                 );
 
                 var text = go.GetComponentInChildren<TMP_Text>();
@@ -101,8 +102,8 @@ public class UIProblemMapper : MonoBehaviour
 
     private void AdjustGridCellSize()
     {
-        GridLayoutGroup grid = gridParent.GetComponent<GridLayoutGroup>();
-        RectTransform rt = gridParent.GetComponent<RectTransform>();
+        GridLayoutGroup grid = hintParent.GetComponent<GridLayoutGroup>();
+        RectTransform rt = hintParent.GetComponent<RectTransform>();
 
         float width = rt.rect.width;
         float height = rt.rect.height;
@@ -113,11 +114,11 @@ public class UIProblemMapper : MonoBehaviour
 
     private void AdjustGridPanelSize()
     {
-        RectTransform panelRT = gridParent.GetComponent<RectTransform>();
+        RectTransform panelRT = hintParent.GetComponent<RectTransform>();
         float screenWidth = Screen.width;
         float screenHeight = Screen.height;
 
-        float size = Mathf.Min(screenWidth, screenHeight) * 0.9f; // 90%フィット
+        float size = Mathf.Min(screenWidth, screenHeight);
         panelRT.sizeDelta = new Vector2(size, size);
     }
 
