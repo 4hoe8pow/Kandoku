@@ -65,7 +65,6 @@ public class UIProblemMapper : MonoBehaviour
         {
             if (solveEffect != null)
                 solveEffect.Play();
-            Debug.Log("正解！パーティクル再生");
         }
 
         prevSolved = IsSolved;
@@ -73,7 +72,7 @@ public class UIProblemMapper : MonoBehaviour
 
     private void BuildUIGrid()
     {
-        const int size = 9;
+        int size = problem.GetLength(0);
 
         // 既存セルの破棄
         foreach (Transform child in hintParent)
@@ -85,7 +84,6 @@ public class UIProblemMapper : MonoBehaviour
             {
                 string symbol = problem[r, c];
 
-                // 「?」ならキー用Prefab、そうでなければセル用Prefab を生成
                 GameObject go = Instantiate(
                     symbol == "？" ? answerPrefab : hintPrefab,
                     hintParent
@@ -93,7 +91,6 @@ public class UIProblemMapper : MonoBehaviour
 
                 var text = go.GetComponentInChildren<TMP_Text>();
 
-                // 「?」でない場合のみ中のTMP_Text にシンボルをセット
                 if (symbol != "？")
                 {
                     if (text != null)
@@ -101,9 +98,14 @@ public class UIProblemMapper : MonoBehaviour
                 }
                 else
                 {
-                    // 「?」の場合はテキストをクリア
                     if (text != null)
                         text.text = string.Empty;
+
+                    if (go.TryGetComponent<AnswerCell>(out var answerCell))
+                    {
+                        answerCell.row = r;
+                        answerCell.col = c;
+                    }
                 }
             }
         }
@@ -163,10 +165,11 @@ public class UIProblemMapper : MonoBehaviour
             IsSolved = false;
             return;
         }
+        int size = solution.GetLength(0);
         bool correct = true;
-        for (int r = 0; r < 9 && correct; r++)
+        for (int r = 0; r < size && correct; r++)
         {
-            for (int c = 0; c < 9 && correct; c++)
+            for (int c = 0; c < size && correct; c++)
             {
                 var cur = board[r, c];
                 var sol = solution[r, c];

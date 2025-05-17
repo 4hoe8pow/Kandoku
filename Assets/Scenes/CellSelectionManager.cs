@@ -6,16 +6,23 @@ public class CellSelectionManager : MonoBehaviour
 
     public AnswerCell selectedCell;
 
-    // 盤面状態を管理
     public string[,] currentBoard = new string[9, 9];
-
-    // 正解盤面も公開
     public string[,] Solution { get; private set; }
+
+    // 追加: UIProblemMapper参照のキャッシュ
+    public UIProblemMapper ProblemMapper { get; private set; }
 
     private void Awake()
     {
-        if (Instance != null) Destroy(gameObject);
-        else Instance = this;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
+        // UIProblemMapperをキャッシュ
+        ProblemMapper = FindFirstObjectByType<UIProblemMapper>();
     }
 
     /// <summary>

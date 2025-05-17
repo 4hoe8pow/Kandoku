@@ -9,6 +9,10 @@ public class AnswerCell : MonoBehaviour, IPointerClickHandler
     public TMP_Text label;
     private Image buttonImage;
 
+    // 追加: セルの行・列情報
+    public int row;
+    public int col;
+
     private static readonly Color normalColor = Color.white;
     private static readonly Color selectedColor = new(1f, 1f, 0.5f, 1f); // 薄めの黄色系
 
@@ -38,13 +42,11 @@ public class AnswerCell : MonoBehaviour, IPointerClickHandler
         var manager = CellSelectionManager.Instance;
         if (manager != null && manager.currentBoard != null)
         {
-            int idx = transform.GetSiblingIndex();
-            int row = idx / 9;
-            int col = idx % 9;
-
+            // row/colプロパティを利用
             manager.currentBoard[row, col] = symbol;
 
-            var mapper = FindFirstObjectByType<UIProblemMapper>();
+            // UIProblemMapper参照をCellSelectionManager経由で取得
+            var mapper = manager.ProblemMapper;
             if (mapper != null)
                 mapper.CheckSolved();
         }
