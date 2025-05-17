@@ -47,34 +47,35 @@ public class ColumnNode : DLXNode
 public class DLXMatrix
 {
     public ColumnNode Header { get; }
+    // BuildExactCoverMatrix で作った配列をそのまま持ち回る
+    public ColumnNode[] ColumnList { get; }
+
     public DLXMatrix()
     {
-        Header = BuildExactCoverMatrix();
+        ColumnList = BuildExactCoverMatrix(out var header);
+        Header = header;
     }
-
-    private static ColumnNode BuildExactCoverMatrix()
+    private static ColumnNode[] BuildExactCoverMatrix(out ColumnNode head)
     {
         const int totalColumns = 4 * 81;
         var columnList = new ColumnNode[totalColumns];
-        var head = new ColumnNode("head");
-        ColumnNode previousColumn = head;
-
-        foreach (int columnIndex in Enumerable.Range(0, totalColumns))
+        head = new ColumnNode("head");
+        ColumnNode previous = head;
+        for (int i = 0; i < totalColumns; i++)
         {
-            var columnNode = new ColumnNode(columnIndex.ToString());
-            columnList[columnIndex] = columnNode;
-            previousColumn.Right = columnNode;
-            columnNode.Left = previousColumn;
-            previousColumn = columnNode;
+            var col = new ColumnNode(i.ToString());
+            columnList[i] = col;
+            previous.Right = col;
+            col.Left = previous;
+            previous = col;
         }
-
-        previousColumn.Right = head;
-        head.Left = previousColumn;
+        previous.Right = head;
+        head.Left = previous;
         foreach (var (row, col, num) in
-          from row in Enumerable.Range(0, 9)
-          from col in Enumerable.Range(0, 9)
-          from num in Enumerable.Range(1, 9)
-          select (row, col, num))
+           from row in Enumerable.Range(0, 9)
+           from col in Enumerable.Range(0, 9)
+           from num in Enumerable.Range(1, 9)
+           select (row, col, num))
         {
             int block = row / 3 * 3 + (col / 3);
             int[] columnIndices = new int[] {
@@ -85,9 +86,9 @@ public class DLXMatrix
                 };
             AddDLXRow(columnList, row, col, num, columnIndices);
         }
-
-        return head;
+        return columnList;
     }
+
 
     private static void AddDLXRow(ColumnNode[] columnList, int r, int c, int n, int[] colIdx)
     {
@@ -200,81 +201,4 @@ public class DLXSolver
             (list[i], list[j]) = (list[j], list[i]);
         }
     }
-}
-
-// Kandoku生成・検証・マスク処理
-public static class KandokuGenerator
-{
-    public static string[,] GenerateKandoku()
-    {
-        var matrix = new DLXMatrix();
-        var solver = new DLXSolver(matrix.Header);
-        var solution = new List<DLXNode>();
-        if (!solver.Search(solution))
-            throw new Exception("生成失敗");
-        return solution.Aggregate(new string[9, 9], (result, node) =>
-        {
-            int id = node.RowID;
-            int r = id / 81;
-            int c = id / 9 % 9;
-            int n = (id % 9) + 1;
-            result[r, c] = ((KandokuSymbol)n).ToString();
-            return result;
-        });
-    }
-
-    public static bool IsValidBoard(string[,] board)
-    {
-        for (int i = 0; i < 9; i++)
-        {
-            var rowSet = new HashSet<string>();
-            var colSet = new HashSet<string>();
-            var blockSet = new HashSet<string>();
-            for (int j = 0; j < 9; j++)
-            {
-                var rowVal = board[i, j];
-                if (rowVal != null && rowVal != "? " && !rowSet.Add(rowVal))
-                    return false;
-                var colVal = board[j, i];
-                if (colVal != null && colVal != "? " && !colSet.Add(colVal))
-                    return false;
-                int br = i / 3 * 3 + (j / 3);
-                int bc = i % 3 * 3 + (j % 3);
-                var blockVal = board[br, bc];
-                if (blockVal != null && blockVal != "? " && !blockSet.Add(blockVal))
-                    return false;
-            }
-        }
-        return true;
-    }
-
-    public static string[,] MaskKandoku(string[,] board, KandokuDifficulty difficulty)
-    {
-        int maskCount = GetMaskCount(difficulty);
-        var rng = new Random();
-        var positions = Enumerable.Range(0, 81).OrderBy(_ => rng.Next()).Take(maskCount);
-        var masked = (string[,])board.Clone();
-        foreach (var pos in positions)
-        {
-            int r = pos / 9;
-            int c = pos % 9;
-            masked[r, c] = "？";
-        }
-        return masked;
-    }
-
-    private static int GetMaskCount(KandokuDifficulty difficulty) => difficulty switch
-    {
-        KandokuDifficulty.VeryEasy => 38,
-        KandokuDifficulty.Easy => 41,
-        KandokuDifficulty.Normal => 43,
-        KandokuDifficulty.Hard => 45,
-        KandokuDifficulty.VeryHard => 48,
-        KandokuDifficulty.Extreme => 50,
-        KandokuDifficulty.Spicy => 53,
-        KandokuDifficulty.Insane => 57,
-        KandokuDifficulty.Nightmare => 60,
-        KandokuDifficulty.Unknown => 64,
-        _ => throw new ArgumentOutOfRangeException(nameof(difficulty))
-    };
 }

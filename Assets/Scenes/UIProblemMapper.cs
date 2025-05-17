@@ -15,14 +15,25 @@ public class UIProblemMapper : MonoBehaviour
     [SerializeField] private GameObject keyPrefab;       // 入力キー用のボタンPrefab
     [SerializeField] private Transform keyPanelParent;
 
+    [Header("Solve Effect")]
+    [SerializeField] private ParticleSystem solveEffect;
+
     private KandokuDifficulty difficulty = KandokuDifficulty.Normal;
 
     private string[,] solution;
     private string[,] problem;
 
+    /// <summary>
+    /// 最新の solved 状態を保持（前回チェック分）
+    /// </summary>
+    private bool prevSolved = false;
+
+    public bool IsSolved { get; private set; } = false;
+
     private static readonly string[] KandokuSymbols = new string[]{
         "臨","兵","闘","者","皆","陣","烈","在","前"
     };
+
     void Start()
     {
         try
@@ -30,15 +41,34 @@ public class UIProblemMapper : MonoBehaviour
             AdjustGridPanelSize();
             solution = KandokuGenerator.GenerateKandoku();
             difficulty = GameSettings.Difficulty;
-            problem = KandokuGenerator.MaskKandoku(solution, difficulty);
+            problem = KandokuGenerator.MaskKandokuUniqueParallel(solution, difficulty);
+
+            // ここで初期盤面と正解盤面をCellSelectionManagerに共有
+            CellSelectionManager.Instance.SetInitialBoard(problem);
+            CellSelectionManager.Instance.SetSolution(solution);
 
             BuildUIGrid();
             BuildKeyPanel();
+
+            // 初期状態で正解判定
+            CheckSolved();
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"Kandoku生成エラー: {ex.Message}");
         }
+    }
+
+    void Update()
+    {
+        if (!prevSolved && IsSolved)
+        {
+            if (solveEffect != null)
+                solveEffect.Play();
+            Debug.Log("正解！パーティクル再生");
+        }
+
+        prevSolved = IsSolved;
     }
 
     private void BuildUIGrid()
@@ -120,6 +150,32 @@ public class UIProblemMapper : MonoBehaviour
 
         float size = Mathf.Min(screenWidth, screenHeight);
         panelRT.sizeDelta = new Vector2(size, size);
+    }
+
+    /// <summary>
+    /// 現在の盤面が正解かどうか判定し、IsSolvedを更新
+    /// </summary>
+    public void CheckSolved()
+    {
+        var board = CellSelectionManager.Instance.currentBoard;
+        if (board == null || solution == null)
+        {
+            IsSolved = false;
+            return;
+        }
+        bool correct = true;
+        for (int r = 0; r < 9 && correct; r++)
+        {
+            for (int c = 0; c < 9 && correct; c++)
+            {
+                var cur = board[r, c];
+                var sol = solution[r, c];
+                if (string.IsNullOrEmpty(cur) || cur == "？" || cur != sol)
+                    correct = false;
+            }
+        }
+        IsSolved = correct;
+        Debug.Log(IsSolved ? "正解！" : "未完成または不正解");
     }
 
 }

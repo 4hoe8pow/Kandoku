@@ -10,7 +10,7 @@ public class AnswerCell : MonoBehaviour, IPointerClickHandler
     private Image buttonImage;
 
     private static readonly Color normalColor = Color.white;
-    private static readonly Color selectedColor = new Color(1f, 1f, 0.5f, 1f); // 薄めの黄色系
+    private static readonly Color selectedColor = new(1f, 1f, 0.5f, 1f); // 薄めの黄色系
 
     private void Awake()
     {
@@ -34,5 +34,19 @@ public class AnswerCell : MonoBehaviour, IPointerClickHandler
     {
         if (label != null)
             label.text = symbol;
+
+        var manager = CellSelectionManager.Instance;
+        if (manager != null && manager.currentBoard != null)
+        {
+            int idx = transform.GetSiblingIndex();
+            int row = idx / 9;
+            int col = idx % 9;
+
+            manager.currentBoard[row, col] = symbol;
+
+            var mapper = FindFirstObjectByType<UIProblemMapper>();
+            if (mapper != null)
+                mapper.CheckSolved();
+        }
     }
 }

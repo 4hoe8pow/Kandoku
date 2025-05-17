@@ -7,7 +7,7 @@ using System.Collections;
 
 public class TitleController : MonoBehaviour
 {
-    [SerializeField] private Dropdown difficultyDropdown;
+    [SerializeField] private TMP_Dropdown difficultyDropdown;
     [SerializeField] private Button startButton;
 
     private IEnumerator WaitForDropdownAndButton()
@@ -25,7 +25,7 @@ public class TitleController : MonoBehaviour
         var difficultyNames = new[] { "臨", "兵", "闘", "者", "皆", "陣", "烈", "在", "前" };
         difficultyDropdown.options.AddRange(
             ((KandokuDifficulty[])System.Enum.GetValues(typeof(KandokuDifficulty)))
-            .Select(difficulty => new Dropdown.OptionData(
+            .Select(difficulty => new TMP_Dropdown.OptionData(
                 difficulty == KandokuDifficulty.Unknown
                 ? string.Join("", difficultyNames)
                 : difficultyNames[(int)difficulty - 1]))
@@ -52,7 +52,13 @@ public class TitleController : MonoBehaviour
         // 選択された値を保存
         GameSettings.Difficulty = (KandokuDifficulty)difficultyDropdown.value + 1;
 
-        // InGame シーンへ遷移
+        // 0.5秒待ってからシーン遷移
+        StartCoroutine(WaitAndLoadScene());
+    }
+
+    private IEnumerator WaitAndLoadScene()
+    {
+        yield return new WaitForSeconds(0.5f);
         SceneManager.LoadScene("InGame");
     }
 }
