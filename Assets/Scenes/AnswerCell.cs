@@ -9,7 +9,6 @@ public class AnswerCell : MonoBehaviour, IPointerClickHandler
     public TMP_Text label;
     private Image buttonImage;
 
-    // 追加: セルの行・列情報
     public int row;
     public int col;
 

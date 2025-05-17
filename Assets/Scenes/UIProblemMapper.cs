@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class UIProblemMapper : MonoBehaviour
 {
@@ -18,6 +19,9 @@ public class UIProblemMapper : MonoBehaviour
     [Header("Solve Effect")]
     [SerializeField] private ParticleSystem solveEffect;
 
+    [Header("Solved Button")]
+    [SerializeField] private GameObject solvedButton; // 正解時に表示するボタン
+
     private KandokuDifficulty difficulty = KandokuDifficulty.Normal;
 
     private string[,] solution;
@@ -33,6 +37,8 @@ public class UIProblemMapper : MonoBehaviour
     private static readonly string[] KandokuSymbols = new string[]{
         "臨","兵","闘","者","皆","陣","烈","在","前"
     };
+
+    private RainbowWave rainbowWave; // 参照保持用
 
     void Start()
     {
@@ -50,6 +56,9 @@ public class UIProblemMapper : MonoBehaviour
             BuildUIGrid();
             BuildKeyPanel();
 
+            // RainbowWave参照取得
+            rainbowWave = hintParent.GetComponentInParent<RainbowWave>();
+
             // 初期状態で正解判定
             CheckSolved();
         }
@@ -59,15 +68,60 @@ public class UIProblemMapper : MonoBehaviour
         }
     }
 
-    void Update()
+    // 正解判定時にアニメーションを呼ぶ
+    public void CheckSolved()
     {
+        var board = CellSelectionManager.Instance.currentBoard;
+        if (board == null || solution == null)
+        {
+            IsSolved = false;
+            return;
+        }
+
+        // 正解判定
+        int size = solution.GetLength(0);
+        bool correct = true;
+        for (int r = 0; r < size && correct; r++)
+        {
+            for (int c = 0; c < size && correct; c++)
+            {
+                var cur = board[r, c];
+                var sol = solution[r, c];
+                if (string.IsNullOrEmpty(cur) || cur == "？" || cur != sol)
+                    correct = false;
+            }
+        }
+        IsSolved = correct;
+        Debug.Log(IsSolved ? "正解！" : "未完成または不正解");
+
+        // 正解時のエフェクト
         if (!prevSolved && IsSolved)
         {
             if (solveEffect != null)
                 solveEffect.Play();
+
+            if (rainbowWave != null)
+                StartCoroutine(RainbowWaveAnimationCoroutine());
+
+            if (solvedButton != null)
+                solvedButton.SetActive(true); // ボタンをアクティブにする
         }
 
         prevSolved = IsSolved;
+    }
+
+    // アニメーション用コルーチン
+    private IEnumerator RainbowWaveAnimationCoroutine()
+    {
+        float duration = 3.0f;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            if (rainbowWave != null)
+                rainbowWave.AnimateRainbow(Time.time);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
     }
 
     private void BuildUIGrid()
@@ -111,6 +165,13 @@ public class UIProblemMapper : MonoBehaviour
         }
 
         AdjustGridCellSize();
+
+        // RainbowWaveを探してRefreshImagesを呼ぶ
+        var rainbow = hintParent.GetComponentInParent<RainbowWave>();
+        if (rainbow != null)
+        {
+            rainbow.RefreshImages();
+        }
     }
 
     private void BuildKeyPanel()
@@ -153,32 +214,4 @@ public class UIProblemMapper : MonoBehaviour
         float size = Mathf.Min(screenWidth, screenHeight);
         panelRT.sizeDelta = new Vector2(size, size);
     }
-
-    /// <summary>
-    /// 現在の盤面が正解かどうか判定し、IsSolvedを更新
-    /// </summary>
-    public void CheckSolved()
-    {
-        var board = CellSelectionManager.Instance.currentBoard;
-        if (board == null || solution == null)
-        {
-            IsSolved = false;
-            return;
-        }
-        int size = solution.GetLength(0);
-        bool correct = true;
-        for (int r = 0; r < size && correct; r++)
-        {
-            for (int c = 0; c < size && correct; c++)
-            {
-                var cur = board[r, c];
-                var sol = solution[r, c];
-                if (string.IsNullOrEmpty(cur) || cur == "？" || cur != sol)
-                    correct = false;
-            }
-        }
-        IsSolved = correct;
-        Debug.Log(IsSolved ? "正解！" : "未完成または不正解");
-    }
-
 }
