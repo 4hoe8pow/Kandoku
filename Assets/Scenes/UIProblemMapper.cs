@@ -46,7 +46,6 @@ public class UIProblemMapper : MonoBehaviour
         var adSupplier = FindFirstObjectByType<GoogleAdMobSupplier>();
         if (adSupplier != null)
         {
-            adSupplier.LoadInterstitialAd();
             adSupplier.ShowInterstitialAd();
         }
         try

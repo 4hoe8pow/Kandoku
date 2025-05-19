@@ -33,6 +33,7 @@ public class GoogleAdMobSupplier : MonoBehaviour
         MobileAds.Initialize(_ =>
         {
             LoadBannerAd();
+            LoadInterstitialAd();
         });
     }
 
