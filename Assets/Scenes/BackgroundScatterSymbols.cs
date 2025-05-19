@@ -23,8 +23,10 @@ public class BackgroundScatterSymbols : MonoBehaviour
         }
 
         // 2. ScatterArea を動的生成
-        GameObject scatterAreaGO = new GameObject("ScatterArea", typeof(RectTransform));
+        GameObject scatterAreaGO = new("ScatterArea", typeof(RectTransform));
         scatterAreaGO.transform.SetParent(canvas.transform, false);
+        // Canvas直下の一番上に配置
+        scatterAreaGO.transform.SetSiblingIndex(0);
 
         RectTransform scatterArea = scatterAreaGO.GetComponent<RectTransform>();
         scatterArea.anchorMin = Vector2.zero;

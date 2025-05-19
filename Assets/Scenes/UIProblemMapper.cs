@@ -42,6 +42,13 @@ public class UIProblemMapper : MonoBehaviour
 
     void Start()
     {
+        // AdMobバナー広告をロード
+        var adSupplier = FindFirstObjectByType<GoogleAdMobSupplier>();
+        if (adSupplier != null)
+        {
+            adSupplier.LoadInterstitialAd();
+            adSupplier.ShowInterstitialAd();
+        }
         try
         {
             AdjustGridPanelSize();
