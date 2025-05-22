@@ -9,7 +9,6 @@ public class CellSelectionManager : MonoBehaviour
     public string[,] currentBoard = new string[9, 9];
     public string[,] Solution { get; private set; }
 
-    // 追加: UIProblemMapper参照のキャッシュ
     public UIProblemMapper ProblemMapper { get; private set; }
 
     private void Awake()

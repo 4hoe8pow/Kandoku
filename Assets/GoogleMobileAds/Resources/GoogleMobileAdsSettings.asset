@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GoogleMobileAdsSettings
   m_EditorClassIdentifier: 
   adMobAndroidAppId: 
-  adMobIOSAppId: ca-app-pub-8110178142432057/2671912671
+  adMobIOSAppId: ca-app-pub-8110178142432057~7664143651
   enableKotlinXCoroutinesPackagingOption: 1
   disableOptimizeInitialization: 0
   disableOptimizeAdLoading: 0
