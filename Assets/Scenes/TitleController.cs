@@ -8,11 +8,12 @@ using System.Collections;
 public class TitleController : MonoBehaviour
 {
     [SerializeField] private TMP_Dropdown difficultyDropdown;
-    [SerializeField] private Button startButton;
+    [SerializeField] private Button newGameButton; // startButton→newGameButton
+    [SerializeField] private Button continueButton; // 追加
 
     private IEnumerator WaitForDropdownAndButton()
     {
-        while (difficultyDropdown == null || startButton == null)
+        while (difficultyDropdown == null || newGameButton == null || continueButton == null)
         {
             yield return null;
         }
@@ -39,7 +40,8 @@ public class TitleController : MonoBehaviour
         difficultyDropdown.gameObject.SetActive(true);
 
         // ボタン押下イベント
-        startButton.onClick.AddListener(OnStartClicked);
+        newGameButton.onClick.AddListener(OnNewGameClicked);
+        continueButton.onClick.AddListener(OnContinueClicked);
     }
 
     private void Start()
@@ -47,11 +49,24 @@ public class TitleController : MonoBehaviour
         StartCoroutine(WaitForDropdownAndButton());
     }
 
-    private void OnStartClicked()
+    private void OnNewGameClicked()
+    {
+        // GameStateがあれば削除
+        if (PlayerPrefs.HasKey("GameState"))
+        {
+            PlayerPrefs.DeleteKey("GameState");
+            PlayerPrefs.Save();
+        }
+        // 選択された値を保存
+        GameSettings.Difficulty = (KandokuDifficulty)difficultyDropdown.value + 1;
+        // 0.5秒待ってからシーン遷移
+        StartCoroutine(WaitAndLoadScene());
+    }
+
+    private void OnContinueClicked()
     {
         // 選択された値を保存
         GameSettings.Difficulty = (KandokuDifficulty)difficultyDropdown.value + 1;
-
         // 0.5秒待ってからシーン遷移
         StartCoroutine(WaitAndLoadScene());
     }

@@ -25,6 +25,8 @@ public class InputKeyButton : MonoBehaviour
             else
             {
                 selected.SetSymbol(label.text);
+                // 盤面一時保存用のJson更新
+                CellSelectionManager.Instance.SendMessage("SaveGameStateToPlayerPrefs", SendMessageOptions.DontRequireReceiver);
             }
         }
     }

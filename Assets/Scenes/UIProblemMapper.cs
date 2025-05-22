@@ -51,15 +51,51 @@ public class UIProblemMapper : MonoBehaviour
         try
         {
             AdjustGridPanelSize();
-            solution = KandokuGenerator.GenerateKandoku();
-            difficulty = GameSettings.Difficulty;
-            problem = KandokuGenerator.MaskKandokuUniqueParallel(solution, difficulty);
 
-            // ここで初期盤面と正解盤面をCellSelectionManagerに共有
-            CellSelectionManager.Instance.SetInitialBoard(problem);
-            CellSelectionManager.Instance.SetSolution(solution);
+            // --- 追加: GameStateのロードと分岐 ---
+            bool useSaved = false;
+            string json = PlayerPrefs.GetString("GameState", null);
+            SerializableGameState loaded = null;
+            if (!string.IsNullOrEmpty(json))
+            {
+                loaded = JsonUtility.FromJson<SerializableGameState>(json);
+                if (loaded != null && loaded.cont != 0)
+                {
+                    useSaved = true;
+                }
+            }
 
-            BuildUIGrid();
+            if (!useSaved)
+            {
+                // セーブデータなし or continue==0 の場合
+                PlayerPrefs.DeleteKey("GameState");
+                solution = KandokuGenerator.GenerateKandoku();
+                difficulty = GameSettings.Difficulty;
+                problem = KandokuGenerator.MaskKandokuUniqueParallel(solution, difficulty);
+
+                CellSelectionManager.Instance.SetInitialBoard(problem);
+                CellSelectionManager.Instance.SetSolution(solution);
+                CellSelectionManager.Instance.SetHintBoard(problem);
+
+                BuildUIGrid();
+            }
+            else
+            {
+                // セーブデータあり
+                Debug.Log($"Loaded JSON: {json}");
+                solution = Unflatten(loaded.solution, 9, 9);
+                problem = Unflatten(loaded.hintBoard, 9, 9);
+
+                CellSelectionManager.Instance.SetInitialBoard(problem);
+                CellSelectionManager.Instance.SetSolution(solution);
+                CellSelectionManager.Instance.SetHintBoard(problem);
+
+                BuildUIGrid();
+
+                // currentBoardリストア
+                RestoreCurrentBoard(loaded.currentBoard);
+            }
+
             BuildKeyPanel();
 
             // RainbowWave参照取得
@@ -219,5 +255,62 @@ public class UIProblemMapper : MonoBehaviour
 
         float size = Mathf.Min(screenWidth, screenHeight);
         panelRT.sizeDelta = new Vector2(size, size);
+    }
+
+    // --- 追加: currentBoardリストア関数 ---
+    private void RestoreCurrentBoard(string[] flatBoard)
+    {
+        if (flatBoard == null)
+        {
+            Debug.Log("RestoreCurrentBoard: flatBoard is null");
+            return;
+        }
+        if (flatBoard.Length != 81)
+        {
+            Debug.Log($"RestoreCurrentBoard: flatBoard length is {flatBoard.Length}, expected 81");
+            return;
+        }
+        var board = new string[9, 9];
+        for (int r = 0; r < 9; r++)
+            for (int c = 0; c < 9; c++)
+                board[r, c] = flatBoard[r * 9 + c];
+
+        CellSelectionManager.Instance.currentBoard = board;
+
+        // UI上の盤面も更新
+        var answerCells = hintParent.GetComponentsInChildren<AnswerCell>(true);
+        foreach (var cell in answerCells)
+        {
+            int row = cell.row;
+            int col = cell.col;
+            string newValue = board[row, col];
+            string currentValue = cell.label != null ? cell.label.text : string.Empty;
+            if (currentValue != newValue && newValue != "？")
+            {
+                cell.SetSymbol(newValue);
+            }
+        }
+    }
+
+    // --- 追加: Unflatten関数 ---
+    private string[,] Unflatten(string[] flat, int rows, int cols)
+    {
+        var arr = new string[rows, cols];
+        if (flat == null || flat.Length != rows * cols) return arr;
+        for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++)
+                arr[r, c] = flat[r * cols + c];
+        return arr;
+    }
+
+    // --- 追加: SerializableGameStateクラス（CellSelectionManagerと同じもの） ---
+    [System.Serializable]
+    private class SerializableGameState
+    {
+        public string[] currentBoard;
+        public string[] solution;
+        public string[] hintBoard;
+        public bool isSolved;
+        public int cont;
     }
 }
