@@ -24,7 +24,15 @@ public class AnswerCell : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        CellSelectionManager.Instance.SelectCell(this);
+        // すでに選択されているセルを再度クリックした場合は選択解除
+        if (CellSelectionManager.Instance.selectedCell == this)
+        {
+            CellSelectionManager.Instance.SelectCell(null);
+        }
+        else
+        {
+            CellSelectionManager.Instance.SelectCell(this);
+        }
     }
 
     public void SetSelected(bool isSelected)

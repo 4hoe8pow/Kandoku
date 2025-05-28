@@ -1,5 +1,7 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class CellSelectionManager : MonoBehaviour
 {
@@ -71,13 +73,67 @@ public class CellSelectionManager : MonoBehaviour
     {
         if (selectedCell == cell) return;
 
+        // 選択解除時は全ボタン活性化
         if (selectedCell != null)
             selectedCell.SetSelected(false);
 
         selectedCell = cell;
 
         if (selectedCell != null)
+        {
             selectedCell.SetSelected(true);
+            UpdateInputKeyButtonsInteractable(selectedCell.row, selectedCell.col);
+        }
+        else
+        {
+            ResetInputKeyButtonsInteractable();
+        }
+    }
+
+    private void UpdateInputKeyButtonsInteractable(int row, int col)
+    {
+        var used = new HashSet<string>();
+        // 行
+        for (int c = 0; c < 9; c++)
+        {
+            var s = currentBoard[row, c];
+            if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
+        }
+        // 列
+        for (int r = 0; r < 9; r++)
+        {
+            var s = currentBoard[r, col];
+            if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
+        }
+        // 3x3ブロック
+        int blockRow = row / 3 * 3;
+        int blockCol = col / 3 * 3;
+        for (int r = blockRow; r < blockRow + 3; r++)
+            for (int c = blockCol; c < blockCol + 3; c++)
+            {
+                var s = currentBoard[r, c];
+                if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
+            }
+        // ボタン制御
+        foreach (var btn in GetAllInputKeyButtons())
+        {
+            bool disable = used.Contains(btn.label.text);
+            btn.SetInteractable(!disable);
+        }
+    }
+
+    private void ResetInputKeyButtonsInteractable()
+    {
+        foreach (var btn in GetAllInputKeyButtons())
+            btn.SetInteractable(true);
+    }
+
+    private List<InputKeyButton> GetAllInputKeyButtons()
+    {
+        if (ProblemMapper == null) return new List<InputKeyButton>();
+        var keyPanel = ProblemMapper.GetType().GetField("keyPanelParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(ProblemMapper) as Transform;
+        if (keyPanel == null) return new List<InputKeyButton>();
+        return keyPanel.GetComponentsInChildren<InputKeyButton>(true).ToList();
     }
 
     // ゲーム状態保存用データクラス
