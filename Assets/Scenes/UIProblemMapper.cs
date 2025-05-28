@@ -22,7 +22,10 @@ public class UIProblemMapper : MonoBehaviour
     [Header("Solved Button")]
     [SerializeField] private GameObject solvedButton; // 正解時に表示するボタン
 
-    private KandokuDifficulty difficulty = KandokuDifficulty.Normal;
+    [Header("Difficulty Display")]
+    [SerializeField] private TMP_Text difficultyText; // 難易度表示用TMP_Text
+
+    public KandokuDifficulty difficulty = KandokuDifficulty.VeryEasy;
 
     private string[,] solution;
     private string[,] problem;
@@ -42,72 +45,90 @@ public class UIProblemMapper : MonoBehaviour
 
     void Start()
     {
-        // AdMobバナー広告をロード
-        var adSupplier = FindFirstObjectByType<GoogleAdMobSupplier>();
-        if (adSupplier != null)
-        {
-            adSupplier.ShowInterstitialAd();
-        }
-        try
-        {
-            AdjustGridPanelSize();
+        // AdMobインターサスティシャル広告の処理はGoogleAdMobSupplierに一任
 
-            // --- 追加: GameStateのロードと分岐 ---
-            bool useSaved = false;
-            string json = PlayerPrefs.GetString("GameState", null);
-            SerializableGameState loaded = null;
-            if (!string.IsNullOrEmpty(json))
+        AdjustGridPanelSize();
+
+        bool useSaved = false;
+        string json = PlayerPrefs.GetString("GameState", null);
+        SerializableGameState loaded = null;
+        if (!string.IsNullOrEmpty(json))
+        {
+            loaded = JsonUtility.FromJson<SerializableGameState>(json);
+            if (loaded != null && loaded.cont != 0)
             {
-                loaded = JsonUtility.FromJson<SerializableGameState>(json);
-                if (loaded != null && loaded.cont != 0)
-                {
-                    useSaved = true;
-                }
+                useSaved = true;
+            }
+        }
+
+        // 難易度はPlayerPrefsから取得
+        if (PlayerPrefs.HasKey("CurrentDifficulty"))
+        {
+            difficulty = (KandokuDifficulty)PlayerPrefs.GetInt("CurrentDifficulty");
+            Debug.Log($"Loaded difficulty from PlayerPrefs: {difficulty}");
+        }
+        else
+        {
+            difficulty = GameSettings.Difficulty;
+            Debug.Log($"Loaded difficulty from GameSettings: {difficulty}");
+        }
+        SetDifficulty(difficulty);
+
+        if (!useSaved)
+        {
+            // セーブデータなし or continue==0 の場合
+            PlayerPrefs.DeleteKey("GameState");
+            solution = KandokuGenerator.GenerateKandoku();
+
+            problem = KandokuGenerator.MaskKandokuUniqueParallel(solution, difficulty);
+
+            CellSelectionManager.Instance.SetInitialBoard(problem);
+            CellSelectionManager.Instance.SetSolution(solution);
+            CellSelectionManager.Instance.SetHintBoard(problem);
+
+            BuildUIGrid();
+        }
+        else
+        {
+            // セーブデータあり
+            Debug.Log($"Loaded JSON: {json}");
+            solution = Unflatten(loaded.solution, 9, 9);
+            Debug.Log("Unflattened solution:");
+            for (int r = 0; r < 9; r++)
+            {
+                string row = "";
+                for (int c = 0; c < 9; c++)
+                    row += solution[r, c] + " ";
+                Debug.Log($"solution[{r}]: {row}");
             }
 
-            if (!useSaved)
+            problem = Unflatten(loaded.hintBoard, 9, 9);
+            for (int r = 0; r < 9; r++)
             {
-                // セーブデータなし or continue==0 の場合
-                PlayerPrefs.DeleteKey("GameState");
-                solution = KandokuGenerator.GenerateKandoku();
-                difficulty = GameSettings.Difficulty;
-                problem = KandokuGenerator.MaskKandokuUniqueParallel(solution, difficulty);
-
-                CellSelectionManager.Instance.SetInitialBoard(problem);
-                CellSelectionManager.Instance.SetSolution(solution);
-                CellSelectionManager.Instance.SetHintBoard(problem);
-
-                BuildUIGrid();
-            }
-            else
-            {
-                // セーブデータあり
-                Debug.Log($"Loaded JSON: {json}");
-                solution = Unflatten(loaded.solution, 9, 9);
-                problem = Unflatten(loaded.hintBoard, 9, 9);
-
-                CellSelectionManager.Instance.SetInitialBoard(problem);
-                CellSelectionManager.Instance.SetSolution(solution);
-                CellSelectionManager.Instance.SetHintBoard(problem);
-
-                BuildUIGrid();
-
-                // currentBoardリストア
-                RestoreCurrentBoard(loaded.currentBoard);
+                string row = "";
+                for (int c = 0; c < 9; c++)
+                    row += problem[r, c] + " ";
             }
 
-            BuildKeyPanel();
+            CellSelectionManager.Instance.SetInitialBoard(problem);
+            CellSelectionManager.Instance.SetSolution(solution);
+            CellSelectionManager.Instance.SetHintBoard(problem);
 
-            // RainbowWave参照取得
-            rainbowWave = hintParent.GetComponentInParent<RainbowWave>();
+            BuildUIGrid();
 
-            // 初期状態で正解判定
-            CheckSolved();
+            // currentBoardリストア
+            Debug.Log("Restoring currentBoard...");
+            RestoreCurrentBoard(loaded.currentBoard);
+            Debug.Log("currentBoard restored.");
         }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"Kandoku生成エラー: {ex.Message}");
-        }
+
+        BuildKeyPanel();
+
+        // RainbowWave参照取得
+        rainbowWave = hintParent.GetComponentInParent<RainbowWave>();
+
+        // 初期状態で正解判定
+        CheckSolved();
     }
 
     // 正解判定時にアニメーションを呼ぶ
@@ -139,17 +160,44 @@ public class UIProblemMapper : MonoBehaviour
         // 正解時のエフェクト
         if (!prevSolved && IsSolved)
         {
-            if (solveEffect != null)
-                solveEffect.Play();
-
-            if (rainbowWave != null)
-                StartCoroutine(RainbowWaveAnimationCoroutine());
-
-            if (solvedButton != null)
-                solvedButton.SetActive(true); // ボタンをアクティブにする
+            OnGameCleared();
         }
 
         prevSolved = IsSolved;
+    }
+
+    // ゲームクリア時の処理をまとめた関数
+    private void OnGameCleared()
+    {
+        if (solveEffect != null)
+            solveEffect.Play();
+
+        if (rainbowWave != null)
+            StartCoroutine(RainbowWaveAnimationCoroutine());
+
+        if (solvedButton != null)
+            solvedButton.SetActive(true); // ボタンをアクティブにする
+
+        // --- クリア回数管理 ---
+        // 難易度は1〜10（KandokuDifficultyのenum値）
+        int diffIndex = (int)difficulty - 1; // 0〜9
+        string key = "ClearCounts";
+        string countsStr = PlayerPrefs.GetString(key, null);
+        int[] counts;
+        var arr = countsStr.Split(',');
+        counts = new int[10];
+        for (int i = 0; i < 10 && i < arr.Length; i++)
+        {
+            int.TryParse(arr[i], out counts[i]);
+        }
+
+        // インクリメント
+        if (diffIndex >= 0 && diffIndex < 10)
+            counts[diffIndex]++;
+        // 保存
+        string newStr = string.Join(",", counts);
+        PlayerPrefs.SetString(key, newStr);
+        PlayerPrefs.Save();
     }
 
     // アニメーション用コルーチン
@@ -257,7 +305,7 @@ public class UIProblemMapper : MonoBehaviour
         panelRT.sizeDelta = new Vector2(size, size);
     }
 
-    // --- 追加: currentBoardリストア関数 ---
+    // --- currentBoardリストア関数 ---
     private void RestoreCurrentBoard(string[] flatBoard)
     {
         if (flatBoard == null)
@@ -292,7 +340,7 @@ public class UIProblemMapper : MonoBehaviour
         }
     }
 
-    // --- 追加: Unflatten関数 ---
+    // --- Unflatten関数 ---
     private string[,] Unflatten(string[] flat, int rows, int cols)
     {
         var arr = new string[rows, cols];
@@ -303,7 +351,7 @@ public class UIProblemMapper : MonoBehaviour
         return arr;
     }
 
-    // --- 追加: SerializableGameStateクラス（CellSelectionManagerと同じもの） ---
+    // --- SerializableGameStateクラス（CellSelectionManagerと同じもの） ---
     [System.Serializable]
     private class SerializableGameState
     {
@@ -312,5 +360,21 @@ public class UIProblemMapper : MonoBehaviour
         public string[] hintBoard;
         public bool isSolved;
         public int cont;
+        public int difficulty; // 追加: 難易度
+    }
+
+    // 難易度と表示を同時に更新するメソッド
+    private void SetDifficulty(KandokuDifficulty diff)
+    {
+        difficulty = diff;
+        // TMP_Textに漢字を表示
+        if (difficultyText != null)
+        {
+            int idx = (int)diff - 1;
+            if (idx >= 0 && idx < KandokuSymbols.Length)
+                difficultyText.text = KandokuSymbols[idx];
+            else
+                difficultyText.text = "?";
+        }
     }
 }

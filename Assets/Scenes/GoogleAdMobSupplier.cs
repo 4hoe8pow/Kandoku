@@ -1,4 +1,5 @@
 using GoogleMobileAds.Api;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -28,6 +29,9 @@ public class GoogleAdMobSupplier : MonoBehaviour
     private InterstitialAd _interstitial;
     private static readonly AdRequest _defaultRequest = new();   // 使い回し
 
+    private float interstitialInterval = 300f; // 5分
+    private Coroutine interstitialCoroutine;
+
     // ──────────────────────────────────────────────────────────────
     // Unity lifecycle
     // ──────────────────────────────────────────────────────────────
@@ -41,10 +45,58 @@ public class GoogleAdMobSupplier : MonoBehaviour
         });
     }
 
+    private void Start()
+    {
+        // 初回だけ即表示（ロード済みなら）
+        StartCoroutine(ShowInterstitialOnStart());
+        // 5分ごとに広告表示
+        interstitialCoroutine = StartCoroutine(ShowInterstitialRoutine());
+    }
+
+    private IEnumerator ShowInterstitialOnStart()
+    {
+        // 広告ロード完了まで待機（最大10秒）
+        float timeout = 10f;
+        float elapsed = 0f;
+        while ((_interstitial == null || !_interstitial.CanShowAd()) && elapsed < timeout)
+        {
+            yield return new WaitForSeconds(0.2f);
+            elapsed += 0.2f;
+        }
+        if (_interstitial != null && _interstitial.CanShowAd())
+        {
+            _interstitial.Show();
+            Debug.Log("[AdMob] 初回インタースティシャル広告を表示しました");
+        }
+        else
+        {
+            Debug.Log("[AdMob] 初回インタースティシャル広告の表示に失敗または未ロード");
+        }
+    }
+
     private void OnDestroy()
     {
         DestroyBanner();
         _interstitial?.Destroy();
+    }
+
+    private IEnumerator ShowInterstitialRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(interstitialInterval);
+            Debug.Log($"[AdMob] {interstitialInterval}秒ごとにインタースティシャル広告を表示します");
+            if (_interstitial != null && _interstitial.CanShowAd())
+            {
+                _interstitial.Show();
+                Debug.Log("[AdMob] インタースティシャル広告を表示しました");
+            }
+            else
+            {
+                Debug.Log("[AdMob] インタースティシャル広告未ロード。再ロードします");
+                LoadInterstitialAd();
+            }
+        }
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -100,6 +152,8 @@ public class GoogleAdMobSupplier : MonoBehaviour
                 }
 
                 _interstitial = ad;
+
+                Debug.Log("[AdMob] インタースティシャル広告ロード完了");
 
                 _interstitial.OnAdFullScreenContentClosed += () =>
                 {

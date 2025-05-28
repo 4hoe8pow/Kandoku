@@ -6,15 +6,10 @@ using System.Linq;
 public class CellSelectionManager : MonoBehaviour
 {
     public static CellSelectionManager Instance { get; private set; }
-
     public AnswerCell selectedCell;
-
     public string[,] currentBoard = new string[9, 9];
     public string[,] Solution { get; private set; }
-
-    // 追加: hintBoard
     public string[,] HintBoard { get; private set; } = new string[9, 9];
-
     public UIProblemMapper ProblemMapper { get; private set; }
 
     private void Awake()
@@ -114,7 +109,7 @@ public class CellSelectionManager : MonoBehaviour
                 var s = currentBoard[r, c];
                 if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
             }
-        // --- ここから追加: 選択セルの値がusedに含まれていれば除外 ---
+        // 選択セルの値がusedに含まれていれば除外
         var selectedValue = currentBoard[row, col];
         if (!string.IsNullOrEmpty(selectedValue) && selectedValue != "？")
         {
@@ -142,29 +137,19 @@ public class CellSelectionManager : MonoBehaviour
         return keyPanel.GetComponentsInChildren<InputKeyButton>(true).ToList();
     }
 
-    // ゲーム状態保存用データクラス
-    [Serializable]
-    private class GameState
-    {
-        public string[,] currentBoard;
-        public string[,] solution;
-        public string[,] hintBoard;
-        public bool isSolved;
-        public int cont;
-    }
-
     /// <summary>
     /// ゲーム状態をPlayerPrefsにJSONで保存
     /// </summary>
-    private void SaveGameStateToPlayerPrefs()
+    public void SaveGameStateToPlayerPrefs()
     {
         var state = new GameState
         {
             currentBoard = (string[,])currentBoard.Clone(),
             solution = (string[,])Solution.Clone(),
             hintBoard = (string[,])HintBoard.Clone(),
-            isSolved = ProblemMapper != null ? ProblemMapper.IsSolved : false,
+            isSolved = ProblemMapper != null && ProblemMapper.IsSolved,
             cont = 1 // 固定値
+            // difficultyは保存しない
         };
         string json = JsonUtility.ToJson(new SerializableGameState(state));
         PlayerPrefs.SetString("GameState", json);
@@ -180,6 +165,7 @@ public class CellSelectionManager : MonoBehaviour
         public string[] hintBoard;
         public bool isSolved;
         public int cont;
+        // public int difficulty; // 削除
 
         public SerializableGameState(GameState state)
         {
@@ -188,6 +174,7 @@ public class CellSelectionManager : MonoBehaviour
             hintBoard = Flatten(state.hintBoard);
             isSolved = state.isSolved;
             cont = state.cont;
+            // difficulty = state.difficulty; // 削除
         }
 
         private string[] Flatten(string[,] arr)
@@ -200,5 +187,17 @@ public class CellSelectionManager : MonoBehaviour
                     flat[r * cols + c] = arr[r, c];
             return flat;
         }
+    }
+
+    // ゲーム状態保存用データクラス
+    [Serializable]
+    private class GameState
+    {
+        public string[,] currentBoard;
+        public string[,] solution;
+        public string[,] hintBoard;
+        public bool isSolved;
+        public int cont;
+        // public int difficulty; // 削除
     }
 }

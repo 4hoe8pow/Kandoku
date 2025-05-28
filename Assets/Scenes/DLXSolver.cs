@@ -4,7 +4,7 @@ using System.Linq;
 
 public enum KandokuSymbol
 {
-    臨 = 1, 兵 = 2, 闘 = 3, 者 = 4, 皆 = 5, 陣 = 6, 烈 = 7, 在 = 8, 前 = 9
+    臨 = 1, 兵 = 2, 闘 = 3, 者 = 4, 皆 = 5, 陣 = 6, 烈 = 7, 在 = 8, 前 = 9, 臨兵闘者皆陣烈在前 = 10
 }
 
 public enum KandokuDifficulty
@@ -18,7 +18,7 @@ public enum KandokuDifficulty
     Spicy = 7,    // 烈
     Insane = 8,   // 在
     Nightmare = 9,// 前
-    Unknown = 10  // 臨兵闘者皆陣烈在前
+    Meteo = 10  // 臨兵闘者皆陣烈在前
 }
 
 // DLXノード

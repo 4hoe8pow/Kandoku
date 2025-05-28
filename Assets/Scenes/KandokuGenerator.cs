@@ -62,7 +62,7 @@ public static class KandokuGenerator
         KandokuDifficulty.Spicy => 53,
         KandokuDifficulty.Insane => 57,
         KandokuDifficulty.Nightmare => 60,
-        KandokuDifficulty.Unknown => 64,
+        KandokuDifficulty.Meteo => 64,
         _ => throw new ArgumentOutOfRangeException(nameof(difficulty))
     };
 
