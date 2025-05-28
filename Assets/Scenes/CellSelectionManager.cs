@@ -1,5 +1,5 @@
 using UnityEngine;
-using System; // for Serializable
+using System;
 
 public class CellSelectionManager : MonoBehaviour
 {

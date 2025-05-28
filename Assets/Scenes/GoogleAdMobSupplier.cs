@@ -13,7 +13,11 @@ public class GoogleAdMobSupplier : MonoBehaviour
     private static readonly string BannerId = "ca-app-pub-3940256099942544/6300978111"; // テスト
     private static readonly string InterstitialId = "ca-app-pub-3940256099942544/1033173712"; // テスト
 #else
-    private static readonly string BannerId       = "ca-app-pub-8110178142432057/2671912671"; // 本番
+#if UNITY_ANDROID
+        private static readonly string BannerId = "ca-app-pub-8110178142432057/7088727883"; // 本番(Android)
+#else
+        private static readonly string BannerId = "ca-app-pub-8110178142432057/2671912671"; // 本番(iOS)
+#endif
     private static readonly string InterstitialId = "ca-app-pub-8110178142432057/6099780542"; // 本番
 #endif
 
