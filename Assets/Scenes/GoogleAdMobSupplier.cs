@@ -47,31 +47,8 @@ public class GoogleAdMobSupplier : MonoBehaviour
 
     private void Start()
     {
-        // 初回だけ即表示（ロード済みなら）
-        StartCoroutine(ShowInterstitialOnStart());
         // 5分ごとに広告表示
         interstitialCoroutine = StartCoroutine(ShowInterstitialRoutine());
-    }
-
-    private IEnumerator ShowInterstitialOnStart()
-    {
-        // 広告ロード完了まで待機（最大10秒）
-        float timeout = 10f;
-        float elapsed = 0f;
-        while ((_interstitial == null || !_interstitial.CanShowAd()) && elapsed < timeout)
-        {
-            yield return new WaitForSeconds(0.2f);
-            elapsed += 0.2f;
-        }
-        if (_interstitial != null && _interstitial.CanShowAd())
-        {
-            _interstitial.Show();
-            Debug.Log("[AdMob] 初回インタースティシャル広告を表示しました");
-        }
-        else
-        {
-            Debug.Log("[AdMob] 初回インタースティシャル広告の表示に失敗または未ロード");
-        }
     }
 
     private void OnDestroy()

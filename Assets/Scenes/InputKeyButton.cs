@@ -9,7 +9,7 @@ public class InputKeyButton : MonoBehaviour
     private Button button;
     private Image buttonImage;
     private static readonly Color normalColor = Color.white;
-    private static readonly Color disabledColor = new Color(0.7f, 0.7f, 0.7f, 1f); // グレー
+    private static readonly Color disabledColor = new(0.7f, 0.7f, 0.7f, 1f); // グレー
 
     private void Awake()
     {
@@ -40,6 +40,8 @@ public class InputKeyButton : MonoBehaviour
                 selected.SetSymbol(label.text);
                 // 盤面一時保存用のJson更新
                 CellSelectionManager.Instance.SendMessage("SaveGameStateToPlayerPrefs", SendMessageOptions.DontRequireReceiver);
+                // 入力キーの活性・非活性を即時更新
+                CellSelectionManager.Instance.UpdateInputKeyButtonsInteractable();
             }
         }
     }

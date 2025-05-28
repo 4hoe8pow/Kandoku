@@ -77,7 +77,6 @@ public class CellSelectionManager : MonoBehaviour
         if (selectedCell != null)
         {
             selectedCell.SetSelected(true);
-            UpdateInputKeyButtonsInteractable(selectedCell.row, selectedCell.col);
         }
         else
         {
@@ -85,41 +84,59 @@ public class CellSelectionManager : MonoBehaviour
         }
     }
 
-    private void UpdateInputKeyButtonsInteractable(int row, int col)
+    public void UpdateInputKeyButtonsInteractable()
     {
-        var used = new HashSet<string>();
-        // 行
-        for (int c = 0; c < 9; c++)
+        var buttons = GetAllInputKeyButtons();
+        foreach (var btn in buttons)
         {
-            var s = currentBoard[row, c];
-            if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
-        }
-        // 列
-        for (int r = 0; r < 9; r++)
-        {
-            var s = currentBoard[r, col];
-            if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
-        }
-        // 3x3ブロック
-        int blockRow = row / 3 * 3;
-        int blockCol = col / 3 * 3;
-        for (int r = blockRow; r < blockRow + 3; r++)
-            for (int c = blockCol; c < blockCol + 3; c++)
+            string symbol = btn.label.text;
+            // 盤面上でこのsymbolが9個使われているか
+            int count = 0;
+            bool isValid = true;
+            // 行・列・マスで重複がないかチェック用
+            for (int i = 0; i < 9; i++)
             {
-                var s = currentBoard[r, c];
-                if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
+                bool rowFound = false, colFound = false;
+                for (int j = 0; j < 9; j++)
+                {
+                    if (currentBoard[i, j] == symbol)
+                    {
+                        if (rowFound) { isValid = false; break; }
+                        rowFound = true;
+                        count++;
+                    }
+                    if (currentBoard[j, i] == symbol)
+                    {
+                        if (colFound) { isValid = false; break; }
+                        colFound = true;
+                    }
+                }
+                if (!isValid) break;
             }
-        // 選択セルの値がusedに含まれていれば除外
-        var selectedValue = currentBoard[row, col];
-        if (!string.IsNullOrEmpty(selectedValue) && selectedValue != "？")
-        {
-            used.Remove(selectedValue);
-        }
-        // ボタン制御
-        foreach (var btn in GetAllInputKeyButtons())
-        {
-            bool disable = used.Contains(btn.label.text);
-            btn.SetInteractable(!disable);
+            // 3x3マスで重複がないか
+            for (int block = 0; block < 9 && isValid; block++)
+            {
+                int br = (block / 3) * 3;
+                int bc = (block % 3) * 3;
+                bool found = false;
+                for (int r = br; r < br + 3; r++)
+                {
+                    for (int c = bc; c < bc + 3; c++)
+                    {
+                        if (currentBoard[r, c] == symbol)
+                        {
+                            if (found) { isValid = false; break; }
+                            found = true;
+                        }
+                    }
+                    if (!isValid) break;
+                }
+            }
+            // 9個使われていて、かつ重複がなければ非活性
+            if (count == 9 && isValid)
+                btn.SetInteractable(false);
+            else
+                btn.SetInteractable(true);
         }
     }
 
