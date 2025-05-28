@@ -114,6 +114,12 @@ public class CellSelectionManager : MonoBehaviour
                 var s = currentBoard[r, c];
                 if (!string.IsNullOrEmpty(s) && s != "？") used.Add(s);
             }
+        // --- ここから追加: 選択セルの値がusedに含まれていれば除外 ---
+        var selectedValue = currentBoard[row, col];
+        if (!string.IsNullOrEmpty(selectedValue) && selectedValue != "？")
+        {
+            used.Remove(selectedValue);
+        }
         // ボタン制御
         foreach (var btn in GetAllInputKeyButtons())
         {
