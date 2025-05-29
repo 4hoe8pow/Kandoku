@@ -731,6 +731,7 @@ MonoBehaviour:
   solveEffect: {fileID: 1325313781}
   solvedButton: {fileID: 794752035}
   difficultyText: {fileID: 1673637691}
+  difficulty: 1
 --- !u!114 &1268510283
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5731,7 +5732,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 200, y: -200}
+  m_AnchoredPosition: {x: 200, y: -400}
   m_SizeDelta: {x: 213.1, y: 100.69995}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1673637691
@@ -5756,8 +5757,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u81E8"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 94eb7303a30464f08b1cb456befe61a3, type: 2}
-  m_sharedMaterial: {fileID: 6095285971813087676, guid: 94eb7303a30464f08b1cb456befe61a3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d04e1417f54bb4598a99962fe9e6d066, type: 2}
+  m_sharedMaterial: {fileID: 7456722822293365982, guid: d04e1417f54bb4598a99962fe9e6d066, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5851,7 +5852,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 6095285971813087676, guid: 94eb7303a30464f08b1cb456befe61a3, type: 2}
+  - {fileID: 7456722822293365982, guid: d04e1417f54bb4598a99962fe9e6d066, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
