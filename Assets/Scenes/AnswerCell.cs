@@ -39,6 +39,8 @@ public class AnswerCell : MonoBehaviour, IPointerClickHandler
     {
         if (buttonImage != null)
             buttonImage.color = isSelected ? selectedColor : normalColor;
+        // セル選択時に入力キーの活性・非活性を更新
+        CellSelectionManager.Instance?.UpdateInputKeyButtonsInteractable();
     }
 
     public void SetSymbol(string symbol)

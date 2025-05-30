@@ -198,6 +198,13 @@ public class UIProblemMapper : MonoBehaviour
         string newStr = string.Join(",", counts);
         PlayerPrefs.SetString(key, newStr);
         PlayerPrefs.Save();
+
+        // ClearCountsの保存に成功したらGameStateを削除
+        if (PlayerPrefs.HasKey("GameState"))
+        {
+            PlayerPrefs.DeleteKey("GameState");
+            PlayerPrefs.Save();
+        }
     }
 
     // アニメーション用コルーチン
@@ -251,6 +258,17 @@ public class UIProblemMapper : MonoBehaviour
                         answerCell.col = c;
                     }
                 }
+
+                // --- ここから枠線制御 ---
+                if (go.TryGetComponent<CellBorder>(out var border))
+                {
+                    bool thickTop = r % 3 == 0;
+                    bool thickLeft = c % 3 == 0;
+                    bool thickBottom = r == size - 1;
+                    bool thickRight = c == size - 1;
+                    border.SetBorder(thickTop, thickBottom, thickLeft, thickRight);
+                }
+                // --- ここまで枠線制御 ---
             }
         }
 

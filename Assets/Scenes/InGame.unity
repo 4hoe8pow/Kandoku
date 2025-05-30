@@ -725,7 +725,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hintParent: {fileID: 1146267699}
   hintPrefab: {fileID: 3010083047248435270, guid: 64c362805e3034d4397bd99ef2d9e77d, type: 3}
-  answerPrefab: {fileID: 8597706548983538828, guid: 635cc6a884e3945a893bb77479ed13b2, type: 3}
+  answerPrefab: {fileID: 3010083047248435270, guid: 2e55b1f76eb364fc18a991acda7d185b, type: 3}
   keyPrefab: {fileID: 6341312166847368632, guid: 03d73c2588be84cbeab5eba7f21ecbe3, type: 3}
   keyPanelParent: {fileID: 2105347303}
   solveEffect: {fileID: 1325313781}
@@ -925,7 +925,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1325313778}
   serializedVersion: 8
-  lengthInSec: 4
+  lengthInSec: 4.5
   simulationSpeed: 1
   stopAction: 0
   cullingMode: 0
@@ -1495,7 +1495,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.19
+      scalar: 0.2
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -1864,7 +1864,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 200
+        scalar: 400
         minScalar: 30
         maxCurve:
           serializedVersion: 2

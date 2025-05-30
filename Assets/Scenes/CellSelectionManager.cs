@@ -80,7 +80,7 @@ public class CellSelectionManager : MonoBehaviour
         }
         else
         {
-            ResetInputKeyButtonsInteractable();
+            UpdateInputKeyButtonsInteractable();
         }
     }
 

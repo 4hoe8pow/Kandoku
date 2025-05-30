@@ -44,14 +44,13 @@ public class TitleController : MonoBehaviour
             }
         }
         // 難易度ごとにラベルを作成
-        string[] kandokuSymbols = new string[] { "臨", "兵", "闘", "者", "皆", "陣", "烈", "在", "前" };
         difficultyDropdown.options.AddRange(
             ((KandokuDifficulty[])System.Enum.GetValues(typeof(KandokuDifficulty)))
-            .Where(difficulty => (int)difficulty > 0 && (int)difficulty <= 9)
             .Select(difficulty =>
             {
                 int idx = (int)difficulty - 1;
-                string label = kandokuSymbols[idx];
+                // KandokuSymbolのenum名を使う
+                string label = System.Enum.GetName(typeof(KandokuSymbol), (KandokuSymbol)(idx + 1));
                 int count = (idx >= 0 && idx < clearCounts.Length) ? clearCounts[idx] : 0;
                 label += $"({count})";
                 return new TMP_Dropdown.OptionData(label);
@@ -60,8 +59,8 @@ public class TitleController : MonoBehaviour
         );
 
         // 保存値を初期表示
-        difficultyDropdown.value = (int)GameSettings.Difficulty;
-
+        difficultyDropdown.value = (int)GameSettings.Difficulty - 1;
+        difficultyDropdown.RefreshShownValue();
         // 続きからボタンの表示制御
         bool hasGameState = PlayerPrefs.HasKey("GameState");
         bool hasDifficulty = PlayerPrefs.HasKey("CurrentDifficulty");
